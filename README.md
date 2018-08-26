@@ -31,7 +31,47 @@ Please follow the below steps in order to generate the report
 * Inside the VM, change directory to vagrant by running `cd /vagrant`
 * Load the site's data into your local database - From the vagrant directory and use the command `psql -d news -f newsdata.sql`
 
-### 3- Generate the report
+### 3- Create views in the Database
+
+The code relies on the following database views so make sure you create the views before running the program.
+
+*  connect to the database -- from the terminal cd to vagrant directory then run `psql -d news`.
+
+* Create a view to show number of successful views per page:
+`create view article_views as 
+select REPLACE (path, '/article/', '') as article, count(id) as views 
+from log where status = '200 OK' and path!='/' 
+group by path 
+order by views desc;`
+
+* Create a view to show number of views per article “linked with author name”:
+
+`create view author_views as 
+select s.name as author_name, r.title as article_title, v.views 
+from article_views as v, articles r, authors s 
+where v.article=r.slug and r.author=s.id
+order by v.views desc;`
+
+* Create a view to show most popular author:
+
+`create view popular_author as 
+select author_name, sum(views) as total_views 
+from author_views 
+group by author_name 
+order by total_views desc;`
+
+* Create a view to show list of error rate per date
+
+`create view failure_rate as
+select a.date, a.success_count, b. failure_count, cast(cast(b. failure_count as float)/a.success_count *100 as decimal(18,1)) as failure_percentage
+from
+(select time::timestamp::date as date, count(id) as success_count from log where status = '200 OK' group by date) as A,
+(select time::timestamp::date as date, count(id) as failure_count from log where status != '200 OK' group by date) as B
+where a.date = b.date
+order by a.date;`
+
+
+### 4- Generate the report
 * Download and extract the project folder and source file into the `vagrant` directory in your computer.
 * from the `terminal` run the program using the command `python reporting_tool.py` from the vagrant directory.
 
