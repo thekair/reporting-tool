@@ -72,8 +72,8 @@ order by a.date;`
 
 
 ### 4- Generate the report
-* Download and extract the project folder and source file into the `vagrant` directory in your computer.
-* from the `terminal` run the program using the command `python reporting_tool.py` from the vagrant directory.
+* Download source file reporting_tool.py into the vagrant directory in your computer.
+* From the `terminal` cd into vagrant directory then run the program using the command `python reporting_tool.py`.
 
 
 
